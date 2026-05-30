@@ -24,16 +24,21 @@ jobs:
         env:
           ANDROID_HOME: /usr/local/lib/android/sdk
 
+      - name: List APK files
+        run: find app/build/outputs -name "*.apk" -type f
+
       - name: Sign APK
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > azxabar.keystore
+          APK_PATH=$(find app/build/outputs -name "*.apk" | head -1)
+          echo "APK: $APK_PATH"
           $ANDROID_HOME/build-tools/34.0.0/apksigner sign \
             --ks azxabar.keystore \
             --ks-key-alias ${{ secrets.KEY_ALIAS }} \
             --ks-pass pass:${{ secrets.KEY_PASSWORD }} \
             --key-pass pass:${{ secrets.KEY_PASSWORD }} \
             --out app-release-signed.apk \
-            app/build/outputs/apk/release/app-release-unsigned.apk
+            "$APK_PATH"
         env:
           ANDROID_HOME: /usr/local/lib/android/sdk
 
