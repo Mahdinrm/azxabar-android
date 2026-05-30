@@ -19,31 +19,26 @@ jobs:
       - name: Grant execute permission
         run: chmod +x gradlew
 
-      - name: Build APK
-        run: ./gradlew assembleRelease --warning-mode=none
+      - name: Build AAB
+        run: ./gradlew bundleRelease --warning-mode=none
         env:
           ANDROID_HOME: /usr/local/lib/android/sdk
 
-      - name: List APK files
-        run: find app/build/outputs -name "*.apk" -type f
-
-      - name: Sign APK
+      - name: Sign AAB
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > azxabar.keystore
-          APK_PATH=$(find app/build/outputs -name "*.apk" | head -1)
-          echo "APK: $APK_PATH"
           $ANDROID_HOME/build-tools/34.0.0/apksigner sign \
             --ks azxabar.keystore \
             --ks-key-alias ${{ secrets.KEY_ALIAS }} \
             --ks-pass pass:${{ secrets.KEY_PASSWORD }} \
             --key-pass pass:${{ secrets.KEY_PASSWORD }} \
-            --out app-release-signed.apk \
-            "$APK_PATH"
+            --out app-release-signed.aab \
+            app/build/outputs/bundle/release/app-release.aab
         env:
           ANDROID_HOME: /usr/local/lib/android/sdk
 
-      - name: Upload Signed APK
+      - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
-          name: Azxabartv-Signed-APK
-          path: app-release-signed.apk
+          name: Azxabartv-AAB
+          path: app-release-signed.aab
