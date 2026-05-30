@@ -19,26 +19,18 @@ jobs:
       - name: Grant execute permission
         run: chmod +x gradlew
 
-      - name: Build AAB
+      - name: Decode Keystore
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/azxabar.keystore
+
+      - name: Build Signed AAB
         run: ./gradlew bundleRelease --warning-mode=none
         env:
           ANDROID_HOME: /usr/local/lib/android/sdk
-
-      - name: Sign AAB
-        run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > azxabar.keystore
-          jarsigner -verbose \
-            -sigalg SHA256withRSA \
-            -digestalg SHA-256 \
-            -keystore azxabar.keystore \
-            -storepass ${{ secrets.KEY_PASSWORD }} \
-            -keypass ${{ secrets.KEY_PASSWORD }} \
-            app/build/outputs/bundle/release/app-release.aab \
-            ${{ secrets.KEY_ALIAS }}
-          cp app/build/outputs/bundle/release/app-release.aab app-release-signed.aab
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
 
       - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
           name: Azxabartv-AAB
-          path: app-release-signed.aab
+          path: app/build/outputs/bundle/release/app-release.aab
