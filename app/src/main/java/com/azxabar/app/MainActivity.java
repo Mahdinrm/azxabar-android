@@ -1,7 +1,6 @@
 package com.azxabar.app;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
@@ -16,6 +15,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -25,7 +25,6 @@ public class MainActivity extends AppCompatActivity {
     private SwipeRefreshLayout swipeRefresh;
     private ProgressBar progressBar;
 
-    // HTML uygulaması — WordPress API'den direkt haber çeker
     private static final String APP_HTML = "file:///android_asset/index.html";
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -33,34 +32,28 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Durum çubuğu rengi
         Window window = getWindow();
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         window.setStatusBarColor(Color.parseColor("#07090F"));
 
-        // Layout
         FrameLayout root = new FrameLayout(this);
         root.setBackgroundColor(Color.parseColor("#07090F"));
 
-        // SwipeRefresh
         swipeRefresh = new SwipeRefreshLayout(this);
         swipeRefresh.setColorSchemeColors(Color.parseColor("#3B82F6"));
         swipeRefresh.setProgressBackgroundColorSchemeColor(Color.parseColor("#0F1520"));
 
-        // WebView
         webView = new WebView(this);
         swipeRefresh.addView(webView, new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT));
 
-        // ProgressBar
         progressBar = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
         progressBar.setMax(100);
         progressBar.setProgressTintList(android.content.res.ColorStateList.valueOf(Color.parseColor("#3B82F6")));
         progressBar.setBackgroundColor(Color.TRANSPARENT);
         FrameLayout.LayoutParams pbParams = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, 6);
-        pbParams.topMargin = 0;
         progressBar.setLayoutParams(pbParams);
 
         root.addView(swipeRefresh, new FrameLayout.LayoutParams(
@@ -70,7 +63,6 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(root);
 
-        // WebView ayarları
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
@@ -80,23 +72,25 @@ public class MainActivity extends AppCompatActivity {
         settings.setDisplayZoomControls(false);
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-        settings.setMediaPlaybackRequiresUserGesture(false);
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
 
-        // WebViewClient
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest req) {
                 String url = req.getUrl().toString();
-                // Dış linkler (t.me, instagram, youtube) tarayıcıda aç
                 if (url.startsWith("https://t.me") ||
                     url.startsWith("https://instagram.com") ||
+                    url.startsWith("https://www.instagram.com") ||
                     url.startsWith("https://twitter.com") ||
+                    url.startsWith("https://x.com") ||
                     url.startsWith("https://youtube.com") ||
-                    url.startsWith("https://www.youtube.com")) {
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                    startActivity(intent);
+                    url.startsWith("https://www.youtube.com") ||
+                    url.startsWith("https://azxabar.com")) {
+                    try {
+                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                        startActivity(intent);
+                    } catch (Exception e) {}
                     return true;
                 }
                 return false;
@@ -108,7 +102,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // WebChromeClient — progress bar
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
@@ -117,20 +110,18 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // SwipeRefresh
         swipeRefresh.setOnRefreshListener(() -> webView.reload());
 
-        // Yükle
-        webView.loadUrl(APP_HTML);
-    }
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (webView.canGoBack()) {
+                    webView.goBack();
+                }
+            }
+        });
 
-    @Override
-    public void onBackPressed() {
-        if (webView.canGoBack()) {
-            webView.goBack();
-        } else {
-            super.onBackPressed();
-        }
+        webView.loadUrl(APP_HTML);
     }
 
     @Override
