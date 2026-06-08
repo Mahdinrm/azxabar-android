@@ -119,8 +119,12 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
+        if (webView.canGoBack()) {
+            webView.goBack();
+     } else {
+        finish();
     }
+}
 
     @Override
     protected void onResume() {
