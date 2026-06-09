@@ -2,6 +2,7 @@ package com.azxabar.app;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -16,7 +17,6 @@ import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.view.WindowCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 public class MainActivity extends AppCompatActivity {
@@ -31,12 +31,23 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
-        
+        int statusBarHeight = 0;
+        int navBarHeight = 0;
+        Resources res = getResources();
+        int statusId = res.getIdentifier("status_bar_height", "dimen", "android");
+        if (statusId > 0) statusBarHeight = res.getDimensionPixelSize(statusId);
+        int navId = res.getIdentifier("navigation_bar_height", "dimen", "android");
+        if (navId > 0) navBarHeight = res.getDimensionPixelSize(navId);
+
         Window window = getWindow();
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        window.setStatusBarColor(Color.TRANSPARENT);
-        window.setNavigationBarColor(Color.TRANSPARENT);
+        window.setStatusBarColor(Color.parseColor("#07090F"));
+        window.setNavigationBarColor(Color.parseColor("#07090F"));
+        window.getDecorView().setSystemUiVisibility(
+            View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+            View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+        );
 
         FrameLayout root = new FrameLayout(this);
         root.setBackgroundColor(Color.parseColor("#07090F"));
@@ -56,11 +67,16 @@ public class MainActivity extends AppCompatActivity {
         progressBar.setBackgroundColor(Color.TRANSPARENT);
         FrameLayout.LayoutParams pbParams = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, 6);
+        pbParams.topMargin = statusBarHeight;
         progressBar.setLayoutParams(pbParams);
 
-        root.addView(swipeRefresh, new FrameLayout.LayoutParams(
+        FrameLayout.LayoutParams swipeLp = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT));
+                FrameLayout.LayoutParams.MATCH_PARENT);
+        swipeLp.topMargin = statusBarHeight;
+        swipeLp.bottomMargin = navBarHeight;
+
+        root.addView(swipeRefresh, swipeLp);
         root.addView(progressBar);
 
         setContentView(root);
@@ -119,12 +135,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (webView.canGoBack()) {
-            webView.goBack();
-     } else {
         finish();
     }
-}
 
     @Override
     protected void onResume() {
