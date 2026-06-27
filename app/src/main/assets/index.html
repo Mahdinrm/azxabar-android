@@ -362,7 +362,21 @@ function showPage(page){
   if(page==='search'){setTimeout(()=>{const inp=document.getElementById('searchInput');if(inp)inp.focus();},100);}
 }
 
-async function wpFetch(path){const r=await fetch(WP+path);const t=r.headers.get('X-WP-TotalPages');if(t)totPages=parseInt(t);if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
+async function wpFetch(path){
+  return new Promise((resolve,reject)=>{
+    const xhr=new XMLHttpRequest();
+    xhr.open('GET',WP+path,true);
+    xhr.onload=()=>{
+      if(xhr.status>=200&&xhr.status<300){
+        const t=xhr.getResponseHeader('X-WP-TotalPages');
+        if(t)totPages=parseInt(t);
+        resolve(JSON.parse(xhr.responseText));
+      }else{reject(new Error('HTTP '+xhr.status));}
+    };
+    xhr.onerror=()=>reject(new Error('Network error'));
+    xhr.send();
+  });
+}const t=r.headers.get('X-WP-TotalPages');if(t)totPages=parseInt(t);if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
 async function init(){try{await Promise.all([loadNews(0,1),loadCats()]);}catch(e){showErr(e.message);}}
 async function loadNews(catId,p){p=p||1;let path='/posts?per_page=12&page='+p+'&_embed';if(catId)path+='&categories='+catId;const data=await wpFetch(path);if(p===1){allNews=data;gridArr=[...data];renderSlider(data.slice(0,5));renderGrid(data);renderLatest(data.slice(0,8));renderTicker(data.slice(0,12));}else{allNews=[...allNews,...data];gridArr=[...gridArr,...data];appendGrid(data,gridArr.length-data.length);}document.getElementById('lmw').style.display=(p<totPages)?'block':'none';pg=p;}
 async function loadCats(){const data=await wpFetch('/categories?per_page=20&hide_empty=true');cats=data;buildCBar(data);buildDrwCats(data);buildCatPage(data);}
