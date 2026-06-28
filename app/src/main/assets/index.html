@@ -400,7 +400,13 @@ function doSearch(q){const g=document.getElementById('searchGrid');if(!q.trim())
 function toggleDrw(){document.getElementById('drw').classList.toggle('on');document.getElementById('ov').classList.toggle('on');}
 function closeDrw(){document.getElementById('drw').classList.remove('on');document.getElementById('ov').classList.remove('on');}
 function showErr(msg){document.getElementById('newsGrid').innerHTML='<div style="grid-column:1/-1" class="es"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><h3>خطا در بارگذاری</h3><p>'+(msg||'')+'</p><button class="rb" onclick="init()">تلاش مجدد</button></div>';}
-init();
+window.onerror = function(msg,src,line){
+  document.getElementById('newsGrid').innerHTML = '<div style="grid-column:1/-1;padding:20px;color:red;font-size:12px">HATA: '+msg+' | '+src+':'+line+'</div>';
+};
+fetch('https://azxabar.com/wp-json/wp/v2/posts?per_page=1&_embed')
+  .then(r=>r.json())
+  .then(d=>{ document.getElementById('newsGrid').innerHTML='<div style="padding:20px;color:green">API ÇALIŞIYOR: '+d.length+' haber</div>'; init(); })
+  .catch(e=>{ document.getElementById('newsGrid').innerHTML='<div style="padding:20px;color:red">FETCH HATASI: '+e.message+'</div>'; });
 </script>
 </body>
 </html>
