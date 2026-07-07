@@ -403,6 +403,14 @@ function showErr(msg){document.getElementById('newsGrid').innerHTML='<div style=
 window.onerror = function(msg,src,line){
   document.getElementById('newsGrid').innerHTML = '<div style="grid-column:1/-1;padding:20px;color:red;font-size:12px">HATA: '+msg+' | '+src+':'+line+'</div>';
 };
+  // API test
+fetch('https://azxabar.com/wp-json/wp/v2/posts?per_page=1')
+  .then(r=>{
+    if(r.ok) return r.json();
+    throw new Error('Status: '+r.status);
+  })
+  .then(d=>alert('API OK: '+d.length+' haber'))
+  .catch(e=>alert('API HATA: '+e.message));
 fetch('https://azxabar.com/wp-json/wp/v2/posts?per_page=1&_embed')
   .then(r=>r.json())
   .then(d=>{ document.getElementById('newsGrid').innerHTML='<div style="padding:20px;color:green">API ÇALIŞIYOR: '+d.length+' haber</div>'; init(); })
