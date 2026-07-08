@@ -376,45 +376,32 @@ async function wpFetch(path){
     xhr.onerror=()=>reject(new Error('Network error'));
     xhr.send();
   });
-}const t=r.headers.get('X-WP-TotalPages');if(t)totPages=parseInt(t);if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
+}
 async function init(){try{await Promise.all([loadNews(0,1),loadCats()]);}catch(e){showErr(e.message);}}
 async function loadNews(catId,p){p=p||1;let path='/posts?per_page=12&page='+p+'&_embed';if(catId)path+='&categories='+catId;const data=await wpFetch(path);if(p===1){allNews=data;gridArr=[...data];renderSlider(data.slice(0,5));renderGrid(data);renderLatest(data.slice(0,8));renderTicker(data.slice(0,12));}else{allNews=[...allNews,...data];gridArr=[...gridArr,...data];appendGrid(data,gridArr.length-data.length);}document.getElementById('lmw').style.display=(p<totPages)?'block':'none';pg=p;}
 async function loadCats(){const data=await wpFetch('/categories?per_page=20&hide_empty=true');cats=data;buildCBar(data);buildDrwCats(data);buildCatPage(data);}
 function loadMore(){loadNews(curCat,pg+1).catch(()=>{});}
 
-function renderSlider(items){const T=document.getElementById('htrack'),D=document.getElementById('hdots');if(!items.length){T.innerHTML='<div class="hload">خبری یافت نشد</div>';return;}slides=items;T.innerHTML=items.map((n,i)=>{const img=gImg(n),cat=gCat(n),title=strip(n.title?.rendered||'');return'<div class="hslide" onclick="openDet(slides['+i+'])">'+(img?'<img src="'+img+'" alt="" onerror="this.style.display='none'">':"")+'<div class="hgrad"></div><div class="hinfo"><span class="hcat">'+cat+'</span><div class="htit">'+title+'</div><div class="hmeta">'+ago(n.date)+'</div></div></div>';}).join('');D.innerHTML=items.map((_,i)=>'<button class="hdot'+(i===0?' on':'')+'" onclick="goS('+i+')"></button>').join('');goS(0);clearInterval(sTmr);sTmr=setInterval(nextS,5000);}
+function renderSlider(items){const T=document.getElementById('htrack'),D=document.getElementById('hdots');if(!items.length){T.innerHTML='<div class="hload">خبری یافت نشد</div>';return;}slides=items;T.innerHTML=items.map((n,i)=>{const img=gImg(n),cat=gCat(n),title=strip(n.title?.rendered||'');return'<div class="hslide" onclick="openDet(slides['+i+'])">'+(img?'<img src="'+img+'" alt="" onerror="this.style.display=\'none\'">':"")+'<div class="hgrad"></div><div class="hinfo"><span class="hcat">'+cat+'</span><div class="htit">'+title+'</div><div class="hmeta">'+ago(n.date)+'</div></div></div>';}).join('');D.innerHTML=items.map((_,i)=>'<button class="hdot'+(i===0?' on':'')+'" onclick="goS('+i+')"></button>').join('');goS(0);clearInterval(sTmr);sTmr=setInterval(nextS,5000);}
 function goS(i){sIdx=i;document.getElementById('htrack').style.transform='translateX('+i*100+'%)';document.querySelectorAll('.hdot').forEach((d,j)=>d.classList.toggle('on',j===i));}
 function nextS(){if(slides.length)goS((sIdx+1)%slides.length);}
 function prevS(){if(slides.length)goS((sIdx-1+slides.length)%slides.length);}
 function renderTicker(items){if(!items.length)return;const c=items.map(n=>'<span class="tkn">'+strip(n.title?.rendered||'')+'</span><span class="tks">●</span>').join('');document.getElementById('tickerIn').innerHTML=c+c;document.getElementById('ticker').style.display='block';}
 function renderGrid(items){const g=document.getElementById('newsGrid');if(!items.length){g.innerHTML='<div style="grid-column:1/-1" class="es"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg><h3>خبری یافت نشد</h3><button class="rb" onclick="init()">تلاش مجدد</button></div>';return;}g.innerHTML=items.map((n,i)=>nCard(n,i,'gridArr')).join('');}
 function appendGrid(items,off){document.getElementById('newsGrid').innerHTML+=items.map((n,i)=>nCard(n,off+i,'gridArr')).join('');}
-function nCard(n,i,arr){const img=gImg(n),cat=gCat(n),title=strip(n.title?.rendered||'');return'<div class="nc" onclick="openDet('+arr+'['+i+'])">'+(img?'<img class="nci" src="'+img+'" alt="" loading="lazy" onerror="this.style.display='none'">':"<div class='ncp'><svg viewBox='0 0 24 24'><rect x='3' y='3' width='18' height='18' rx='2'/></svg></div>")+'<div class="ncb"><div class="ncc">'+cat+'</div><div class="nct">'+title+'</div><div class="ncm">'+ago(n.date)+'</div></div></div>';}
-function renderLatest(items){latestArr=items;const el=document.getElementById('latestList');if(!items.length){el.innerHTML='';return;}el.innerHTML=items.map((n,i)=>'<div class="li" onclick="openDet(latestArr['+i+'])">'+(gImg(n)?'<img src="'+gImg(n)+'" alt="" loading="lazy" onerror="this.style.display='none'">':"")+'<div class="lib"><div class="lic">'+gCat(n)+'</div><div class="lit">'+strip(n.title?.rendered||'')+'</div><div class="lim">'+ago(n.date)+'</div></div></div>').join('');}
+function nCard(n,i,arr){const img=gImg(n),cat=gCat(n),title=strip(n.title?.rendered||'');return'<div class="nc" onclick="openDet('+arr+'['+i+'])">'+(img?'<img class="nci" src="'+img+'" alt="" loading="lazy" onerror="this.style.display=\'none\'">':"<div class='ncp'><svg viewBox='0 0 24 24'><rect x='3' y='3' width='18' height='18' rx='2'/></svg></div>")+'<div class="ncb"><div class="ncc">'+cat+'</div><div class="nct">'+title+'</div><div class="ncm">'+ago(n.date)+'</div></div></div>';}
+function renderLatest(items){latestArr=items;const el=document.getElementById('latestList');if(!items.length){el.innerHTML='';return;}el.innerHTML=items.map((n,i)=>'<div class="li" onclick="openDet(latestArr['+i+'])">'+(gImg(n)?'<img src="'+gImg(n)+'" alt="" loading="lazy" onerror="this.style.display=\'none\'">':"")+'<div class="lib"><div class="lic">'+gCat(n)+'</div><div class="lit">'+strip(n.title?.rendered||'')+'</div><div class="lim">'+ago(n.date)+'</div></div></div>').join('');}
 function buildCBar(cs){document.getElementById('cbar').innerHTML='<button class="cbtn on" onclick="filterCat(0,this)">همه اخبار</button>'+cs.map(c=>'<button class="cbtn" onclick="filterCat('+c.id+',this)">'+c.name+'</button>').join('');}
 function buildDrwCats(cs){document.getElementById('drwCats').innerHTML=cs.map(c=>'<a href="#" onclick="filterCat('+c.id+',null);closeDrw();return false;"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>'+c.name+'</a>').join('');}
-function buildCatPage(cs){const icons=['📰','🌍','⚽','💰','🎭','🔬','🏛️','❤️','🎵','📱','✈️','🌿','⚡','🎓','🏥','🎬','🖼️','🌐'];document.getElementById('catGrid').innerHTML=cs.map((c,i)=>'<div class="cat-item" onclick="filterCat('+c.id+',null);showPage('home');"><div class="cat-icon">'+icons[i%icons.length]+'</div><div class="cat-name">'+c.name+'</div></div>').join('');}
+const CAT_ICONS={'درباره ما':'ℹ️','دسته بندی نشده':'📁','حقوق بشر':'✊','اجتماعی':'👥','اعدام':'⚖️','اعتراضات 1404':'📢','اقتصادی':'💰','ایران':'🇮🇷','جهان':'🌍','علمی':'🔬','زندانی سیاسی':'⛓️','تکنولوژی':'💻','گالری عکس':'📷','گالری صوت':'🎧','گالری فیلم':'🎬','محیط زیست':'🌿','مقاله':'📝','مقاله تورکی':'📝','مقاله فارسی':'📝','ورزشی':'⚽'};
+function buildCatPage(cs){document.getElementById('catGrid').innerHTML=cs.map(c=>'<div class="cat-item" onclick="filterCat('+c.id+',null);showPage(\'home\');"><div class="cat-icon">'+(CAT_ICONS[c.name]||'📰')+'</div><div class="cat-name">'+c.name+'</div></div>').join('');}
 function filterCat(id,btn){curCat=id;pg=1;document.querySelectorAll('.cbtn').forEach(b=>b.classList.remove('on'));if(btn)btn.classList.add('on');document.getElementById('newsGrid').innerHTML='<div style="grid-column:1/-1;padding:40px 0;display:flex;align-items:center;justify-content:center"><div class="spin"></div></div>';loadNews(id,1).catch(e=>showErr(e.message));}
 function openDet(n){if(!n)return;const img=gImg(n),cat=gCat(n),title=strip(n.title?.rendered||'');curDetUrl=n.link||'https://azxabar.com';document.getElementById('dhtxt').textContent=cat;const di=document.getElementById('dImg');di.src=img;di.style.display=img?'block':'none';document.getElementById('dCat').textContent=cat;document.getElementById('dTime').textContent=ago(n.date);document.getElementById('dTit').textContent=title;document.getElementById('dCont').innerHTML=n.content?.rendered||n.excerpt?.rendered||'<p>متن در دسترس نیست.</p>';document.getElementById('shrTg').setAttribute('data-url','https://t.me/share/url?url='+encodeURIComponent(curDetUrl)+'&text='+encodeURIComponent(title));showPage('det');}
 function doSearch(q){const g=document.getElementById('searchGrid');if(!q.trim()){g.innerHTML='';return;}const res=allNews.filter(n=>strip(n.title?.rendered||'').includes(q));if(!res.length){g.innerHTML='<div style="grid-column:1/-1" class="es"><h3>نتیجه‌ای یافت نشد</h3></div>';return;}g.innerHTML=res.map((n,i)=>nCard(n,i,'res')).join('');}
 function toggleDrw(){document.getElementById('drw').classList.toggle('on');document.getElementById('ov').classList.toggle('on');}
 function closeDrw(){document.getElementById('drw').classList.remove('on');document.getElementById('ov').classList.remove('on');}
 function showErr(msg){document.getElementById('newsGrid').innerHTML='<div style="grid-column:1/-1" class="es"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><h3>خطا در بارگذاری</h3><p>'+(msg||'')+'</p><button class="rb" onclick="init()">تلاش مجدد</button></div>';}
-window.onerror = function(msg,src,line){
-  document.getElementById('newsGrid').innerHTML = '<div style="grid-column:1/-1;padding:20px;color:red;font-size:12px">HATA: '+msg+' | '+src+':'+line+'</div>';
-};
-  // API test
-fetch('https://azxabar.com/wp-json/wp/v2/posts?per_page=1')
-  .then(r=>{
-    if(r.ok) return r.json();
-    throw new Error('Status: '+r.status);
-  })
-  .then(d=>alert('API OK: '+d.length+' haber'))
-  .catch(e=>alert('API HATA: '+e.message));
-fetch('https://azxabar.com/wp-json/wp/v2/posts?per_page=1&_embed')
-  .then(r=>r.json())
-  .then(d=>{ document.getElementById('newsGrid').innerHTML='<div style="padding:20px;color:green">API ÇALIŞIYOR: '+d.length+' haber</div>'; init(); })
-  .catch(e=>{ document.getElementById('newsGrid').innerHTML='<div style="padding:20px;color:red">FETCH HATASI: '+e.message+'</div>'; });
+init();
 </script>
 </body>
 </html>
