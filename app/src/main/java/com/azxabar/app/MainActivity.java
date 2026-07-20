@@ -98,22 +98,20 @@ public class MainActivity extends AppCompatActivity {
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
-            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest req) {
-                String url = req.getUrl().toString();
-                if (url.startsWith("https://t.me") ||
-                    url.startsWith("https://instagram.com") ||
-                    url.startsWith("https://www.instagram.com") ||
-                    url.startsWith("https://twitter.com") ||
-                    url.startsWith("https://x.com") ||
-                    url.startsWith("https://youtube.com") ||
-                    url.startsWith("https://www.youtube.com") ||
-                    url.startsWith("https://azxabar.com")) {
-                    try {
-                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                        startActivity(intent);
-                    } catch (Exception e) {}
+            public boolean shouldOverrideUrlLoading(WebView v, WebResourceRequest r) {
+                String url = r.getUrl().toString();
+                // Sadece sosyal medya linklerini dışarıya aç
+                if(url.startsWith("https://t.me") ||
+                   url.startsWith("https://instagram.com") ||
+                   url.startsWith("https://www.instagram.com") ||
+                   url.startsWith("https://twitter.com") ||
+                   url.startsWith("https://x.com") ||
+                   url.startsWith("https://youtube.com") ||
+                   url.startsWith("https://www.youtube.com")) {
+                    try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))); } catch(Exception e) {}
                     return true;
                 }
+                // azxabar.com linkleri WebView içinde aç
                 return false;
             }
             @Override
